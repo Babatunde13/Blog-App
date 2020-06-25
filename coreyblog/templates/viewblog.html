@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+    {% block content %}
+        <article class="media content-section">
+            <div class="media-body">
+                <div class="article-metadata">
+                    {% if blog.author.image_file == 'default.jpg' %}
+                        <img class="rounded-circle account-img" src="{{ blog.author.gravatar() }}" alt="blogger's profile pics" sizes="150" srcset="">
+                    {% else %}
+                        <img class="rounded-circle account-img" src="{{ url_for('static', filename='img/'+blog.author.image_file) }}" alt="" sizes="150" srcset="">
+                    {% endif %}
+                    {% if blog.author.username != current_user.username %}
+                    <div>
+                        <h3>{{ blog.author.username }} posted {{ blog.title }}</h3>
+                            <small class="text-muted">{{ blog.date_posted.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                    <p class="article-content">
+                        {% if blog.body_html %}
+                            {{ blog.body_html | safe }}
+                        {% else %}
+                            {{ blog.content }}
+                        {% endif %}
+                    </p>
+                {% else %}
+                    <div>
+                        <h3>You posted {{ blog.title }}</h3>
+                        <small class="text-muted">{{ blog.date_posted.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                </div>
+                <p class="article-content">
+                    {% if blog.body_html %}
+                        {{ blog.body_html | safe }}
+                    {% else %}
+                        {{ blog.content }}
+                    {% endif %}
+                    </p>
+                </p>
+                <a class="btn btn-danger btn-sm m-1" href="{{ url_for('delete', post=blog.title) }}">Delete blog</a>
+                <a  class="btn btn-secondary btn-sm m-1" href="{{ url_for('updatepost', post=blog.title) }}">Update blog</a>
+                {% endif %}
+                </div>     
+            </div>
+            <form action="" method="post" action="" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <fieldset class="form-group">
+                    <legend>Comment</legend>
+                    <div class="form-group">
+                        {{ form.body.label(class='form-control-label') }}    
+                        {% if form.body.errors %}
+                            {{ form.body(class='form-control-lg is-invalid form-control') }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.body.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                        {% else %}
+                            {{ form.body(class='form-control-lg form-control') }}
+                        {% endif %}
+                    </div>
+                </fieldset>
+                <div class="form-group">
+                    {{ form.submit(class='btn btn-outline-info') }}
+                </div>
+            </form>
+            <a href="{{ url_for('viewblog', title=blog.title) }}#comments">
+                <span class="btn btn-primary" id="comment">
+                    {{ count }} 
+                    {% if count > 1 %}
+                        Comments
+                    {% else %}
+                        Comment
+                    {% endif %}
+                </span>
+               </a>
+               {% for comment in comments %}
+                    <div class="media-body comment">
+                        <div class="article-metadata">
+                            {% if comment.author.image_file == 'default.jpg' %}
+                                <img class="rounded-circle account-img" src="{{ comment.author.gravatar() }}" alt="Profile pics" sizes="150" srcset="">
+                            {% else %}
+                                <img class="rounded-circle account-img" src="{{ url_for('static', filename='img/'+current_user.image_file) }}" alt="" sizes="150" srcset="">
+                            {% endif %}
+                            <span class="mr-2">{{ comment.author.username }}</span>
+                            <small class="text-muted">{{ comment.date_posted.strftime('%Y-%m-%d') }}</small>
+                        </div> 
+                        <p class="article-content">
+                            {% if comment.body_html %}
+                                {{ comment.body_html[:500] | safe }}
+                            {% else %}
+                                {{ comment.content[:500] }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            {% endfor %}
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                    {% if pagination.page == page_num %}
+                        <a class="btn btn-info mb-4" href="{{ url_for('viewblog', page=page_num, title=blog.title) }}">{{ page_num }}</a>
+                    {% else %}
+                        <a class="btn btn-outline-info mb-4" href="{{ url_for('viewblog', page=page_num, title=blog.title) }}">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    ... 
+                {% endif %}
+            {% endfor %}
+        </article>
+    {% endblock %}

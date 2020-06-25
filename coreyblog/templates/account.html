@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+{% block content %} 
+    <div class="content-section" >
+        <div class="media">
+            {% if current_user.image_file == 'default.jpg' %}
+                <img class="rounded-circle account-img" src="{{ current_user.gravatar() }}" alt="Profile pics" sizes="150" srcset="">
+            {% else %}
+                <img class="rounded-circle account-img" src="{{ url_for('static', filename='img/'+current_user.image_file) }}" alt="" sizes="150" srcset="">
+            {% endif %}            
+            <div class="media-body">
+                <h2 class="account-heading">{{current_user.username}} ({{ all_posts.total }} {% if all_posts.total > 1 %} posts{% else %} post{% endif %})</h2>
+                <p class="text-secondary">{{current_user.email}}</p>
+            </div>
+            <button class='btn btn-outline-info' type="submit"><a href="{{ url_for('updateaccount') }}">Update Profile</a></button>
+        </div>
+    </div>
+        {% if current_user.posts %}
+        {% for post in all_posts.items %}
+            <article class="media content-section">
+                <div class="media-body">
+                    <div class="article-metadata">
+                        {% if current_user.image_file == 'default.jpg' %}
+                            <img class="rounded-circle account-img" src="{{ current_user.gravatar() }}" alt="Profile pics" sizes="150" srcset="">
+                        {% else %}
+                            <img class="rounded-circle account-img" src="{{ url_for('static', filename='img/'+current_user.image_file) }}" alt="" sizes="150" srcset="">
+                        {% endif %}
+                        <span class="mr-2">{{ current_user.username }}</span>
+                        <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                    <h2><a href="{{ url_for('viewblog', title=post.title) }}" class="article-title">{{ post.title}}</a></h2>
+                    <p class="article-content">
+                        {% if post.body_html %}
+                            {{ post.body_html[:500] | safe }}...
+                        {% else %}
+                            {{ post.content[:500] }}...
+                        {% endif %}
+                    </p>
+                </div>
+                <a class="btn btn-danger btn-sm m-1"  href="{{ url_for('delete', post=post.title) }}">Delete post</a>
+                <a class="btn btn-secondary btn-sm m-1"  href="{{ url_for('updatepost', post=post.title) }}">Update post</a>
+            </article>
+            <br>
+        {% endfor %}
+        {% for page_num in all_posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if all_posts.page == page_num %}
+                <a class="btn btn-info mb-4" href="{{ url_for('account', page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('account', page=page_num) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            ... 
+        {% endif %}
+            {% endfor %}
+    {% else %}
+            <p>You haven't created any post!</p>
+    {% endif %}
+    <p>Click <a href="{{ url_for('newpost') }}">here</a> to create new post</p>
+{% endblock %}
+

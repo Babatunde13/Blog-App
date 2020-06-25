@@ -1,0 +1,47 @@
+{% extends 'layout.html' %}
+{% block content %}
+    {% for post in all_posts.items %}
+        <article class="media content-section">
+            <div class="media-body">
+                <div class="article-metadata">
+                    {% if post.author.image_file == 'default.jpg' %}
+                        <img class="rounded-circle account-img" src="{{ post.author.gravatar() }}" alt="profile pics" sizes="150" srcset="">
+                    {% else %}
+                        <img class="rounded-circle account-img" src="{{ url_for('static', filename='img/'+post.author.image_file) }}" alt="" sizes="150" srcset="">
+                    {% endif %}
+                    {% if post.author == current_user %}
+                        <a class="mr-2" href="{{ url_for('account') }}">{{ current_user.username }}</a>
+                    {% else %}
+                        <a class="mr-2" href="{{ url_for('profile', user=post.author.username) }}">{{ post.author.username }}</a>
+                    {% endif %}    
+                    <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+                </div>
+                <h2><a href="{{ url_for('viewblog', title=post.title) }}" class="article-title">{{ post.title}}</a></h2>
+                <p class="article-content">
+                    {% if post.body_html %}
+                        {{ post.body_html[:500] | safe }}...
+                    {% else %}
+                        {{ post.content[:500] }}...
+                    {% endif %}
+                </p>
+            </div>
+        </article>
+    {% endfor %}
+    <hr>
+    {% if current_user.is_authenticated %}
+        <p class="text-muted">Click <a href="{{ url_for('newpost') }}">here</a> to create new post</p>
+    {% endif %}
+
+    {% for page_num in all_posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if all_posts.page == page_num %}
+                <a class="btn btn-info mb-4" href="{{ url_for('home', page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('home', page=page_num) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            ... 
+        {% endif %}
+            {% endfor %}
+{% endblock %}
+ 

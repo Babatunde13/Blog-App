@@ -1,0 +1,55 @@
+{% extends 'layout.html' %}
+{% block content %} 
+    <div class="content-section">
+        <div class="media">
+            {% if user_.image_file == 'default.jpg' %}
+                <img class="rounded-circle account-img" src="{{ user_.gravatar() }}" alt="blogger's profile pics" sizes="150" srcset="">
+            {% else %}
+                <img class="rounded-circle account-img" src="{{ url_for('static', filename='img/'+user_.image_file) }}" alt="" sizes="150" srcset="">
+            {% endif %}
+            <div class="media-body">
+                <h2 class="account-heading">{{user_.username}} ({{ all_posts.total }} {% if all_posts.total > 1 %} posts{% else %} post{% endif %})</h2>
+                <p class="text-secondary">{{user_.email}}</p>
+            </div>
+        </div>
+    </div>
+        {% if user_.posts %}
+        {% for post in all_posts.items %}
+            <article class="media content-section">
+                <div class="media-body">
+                    <div class="article-metadata">
+                        {% if user_.image_file == 'default.jpg' %}
+                            <img class="rounded-circle account-img" src="{{ user_.gravatar() }}" alt="blogger's profile pics" sizes="150" srcset="">
+                        {% else %}
+                            <img class="rounded-circle account-img" src="{{ url_for('static', filename='img/'+user_.image_file) }}" alt="" sizes="150" srcset="">
+                        {% endif %}
+                        <span class="mr-2">{{ user_.username }}</span>
+                        <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                    <h2><a href="{{ url_for('viewblog', title=post.title) }}" class="article-title">{{ post.title}}</a></h2>
+                    <p class="article-content">
+                        {% if post.body_html %}
+                            {{ post.body_html[:500] | safe }}...
+                        {% else %}
+                            {{ post.content[:500] }}...
+                        {% endif %}
+                    </p>
+                </div>
+            </article>
+            <br>
+        {% endfor %}
+        {% for page_num in all_posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if all_posts.page == page_num %}
+                <a class="btn btn-info mb-4" href="{{ url_for('home', page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('home', page=page_num) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            ... 
+        {% endif %}
+            {% endfor %}
+    {% else %}
+            <p>{{user.username}} hasn't created any post!</p>
+    {% endif %}
+{% endblock %}
