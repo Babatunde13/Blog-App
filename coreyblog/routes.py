@@ -185,7 +185,6 @@ def best_post():
     for post in Post.query.all():
         if len(post.comments) > len(best.comments):
             best=post
-    flash('redirecting you to the post page')
     return redirect(url_for('viewblog', title=best.title))
 
 @app.route('/profile/best')
@@ -194,7 +193,6 @@ def best_author():
     for user in User.query.all():
         if len(user.posts) > len(win.posts): 
                 win = user
-    flash("redirecting you to the author's page")
     return redirect(url_for('profile', user=win.username))
 
 
