@@ -16,12 +16,12 @@
                     {% endif %}    
                     <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
                 </div>
-                <h2><a href="{{ url_for('viewblog', title=post.title) }}" class="article-title">{{ post.title}}</a></h2>
+                <h2><a href="{{ url_for('viewblog', id=post.id) }}" class="article-title">{{ post.title}}</a></h2>
                 <p class="article-content">
                     {% if post.body_html %}
-                        {{ post.body_html[:500] | safe }}...
+                        {{ post.body_html | safe }}
                     {% else %}
-                        {{ post.content[:500] }}...
+                        {{ post.content }}
                     {% endif %}
                 </p>
             </div>

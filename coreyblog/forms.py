@@ -111,5 +111,5 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField('Reset Passowrd')
 
 class CommentForm(FlaskForm):
-    body = PageDownField('', validators=[DataRequired()])
+    body = PageDownField('Comment', validators=[DataRequired()])
     submit = SubmitField('Submit')

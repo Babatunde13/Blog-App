@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_pagedown import PageDown
+from flask_migrate import Migrate, MigrateCommand
 
 app = Flask(__name__)
 app.config['SECRET_KEY']=os.environ.get('SECRET_KEY')
@@ -22,5 +23,6 @@ app.config['MAIL_USERNAME']=os.environ.get('EMAIL_USER')
 app.config['MAIL_PASSWORD']=os.environ.get('EMAIL_PASS')
 mail= Mail(app)
 pagedown = PageDown(app)
+migrate = Migrate(app, db)
 
 from coreyblog import routes

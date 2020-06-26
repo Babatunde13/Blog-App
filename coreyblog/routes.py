@@ -33,18 +33,21 @@ def about():
 @app.errorhandler(403)
 def internal_server_error(error):
     return render_template('error.html', 
+                            title='Server error',
                             error1="Forbidden (403)",
                             error2="You don't have the permission to access the requested resource. It is either read-protected or not readable by the server."), 403
 
 @app.errorhandler(404)
 def page_not_found(error):
     return render_template('error.html', 
+                            title='Page not found',
                             error1="Page not found (404)",
                             error2="The requested URL was not found on our server. If you entered the URL manually please check your spelling and try again.", error=404), 404
 
 @app.errorhandler(500)
 def internal_server_error2(error):
     return render_template('error.html', 
+                            title='Error',
                             error1="Something went wrong(500)",
                             error2="We're experiencing  some trouble on our end, please try again"), 500
 
@@ -128,7 +131,9 @@ def updateaccount():
         form.email.data = current_user.email
     else:
         pass
-    return render_template('updateaccount.html', form=form)
+    return render_template('updateaccount.html', 
+                            title='Update Account',
+                            form=form)
     
 
 @app.route('/post/new', methods=['GET', 'POST'])
@@ -147,19 +152,31 @@ def newpost():
                             form=form, 
                             title='Create Post')
 
-@app.route('/post/delete/<post>', methods=['DELETE', 'GET'])
+@app.route('/post/delete/<int:id>', methods=['DELETE', 'GET'])
 @login_required
-def delete(post):
-    db.session.delete(Post.query.filter_by(title=post).first_or_404())
-    db.session.commit()
-    flash('Your post has been successfully deleted', 'success')
-    return redirect(url_for('home'))
+def delete(id):
+    if current_user.id==Post.query.get_or_404(id).author.id:
+        db.session.delete(Post.query.get_or_404(id))
+        db.session.commit()
+        flash('Your post has been successfully deleted', 'success')
+        return redirect(url_for('home'))
+    abort(403)
 
-@app.route('/post/update/<post>', methods=['GET', 'POST'])
+@app.route('/comment/delete/<int:id>', methods=['DELETE', 'GET'])
 @login_required
-def updatepost(post):
+def delete_comment(id):
+    if current_user.id==Comment.query.get_or_404(id).author.id:
+        db.session.delete(Comment.query.get_or_404(id))
+        db.session.commit()
+        flash('Your comment has been successfully deleted', 'success')
+        return redirect(url_for('home'))
+    abort(403)
+
+@app.route('/post/update/<int:id>', methods=['GET', 'POST'])
+@login_required
+def updatepost(id):
     form = UpdatePostForm()
-    post = Post.query.filter_by(title=post).first_or_404()
+    post = Post.query.get_or_404(id)
     if current_user != post.author:
         return  abort(403)
     if form.validate_on_submit():
@@ -169,14 +186,14 @@ def updatepost(post):
         db.session.commit()
         flash('Your post has been updated', 'success')
         return redirect(url_for('viewblog', 
-                                title=post.title))
+                                id=post.id))
     elif request.method == 'GET':
         form.title.data = post.title
         form.content.data = post.content
     else:
         pass
     return render_template('updatepost.html', 
-                            title='Update', 
+                            title='Update Post', 
                             form=form)
 
 @app.route('/post/best/')
@@ -185,7 +202,7 @@ def best_post():
     for post in Post.query.all():
         if len(post.comments) > len(best.comments):
             best=post
-    return redirect(url_for('viewblog', title=best.title))
+    return redirect(url_for('viewblog', id=best.id))
 
 @app.route('/profile/best')
 def best_author():
@@ -210,18 +227,23 @@ def profile(user):
                             all_posts=all_posts, 
                             title=f'Profile {user}')
 
-@app.route('/post/view/<title>', methods=['GET', 'POST'])
-def viewblog(title):
-    blog=Post.query.filter_by(title=title).first_or_404()
+@app.route('/post/view/<int:id>', methods=['GET', 'POST'])
+def viewblog(id):
+    blog=Post.query.get_or_404(id)
     form=CommentForm()
     if form.validate_on_submit():
-        comment = Comment(content=form.body.data,
-                            post=blog,
-                            user_id=current_user.id)
-        db.session.add(comment)
-        db.session.commit()
-        flash('You comment has been successfully added')
-        return redirect(url_for('viewblog', title=blog.title))
+        if not current_user.is_authenticated:
+            flash('You need to be logged in to comment')
+            next_page=request.args.get('next') or f'post/view/{title}'
+            return redirect(url_for('login', next=next_page))
+        else:
+            comment = Comment(content=form.body.data,
+                                post=blog,
+                                user_id=current_user.id)
+            db.session.add(comment)
+            db.session.commit()
+            flash('You comment has been successfully added')
+            return redirect(url_for('viewblog', id=blog.id))
     page = request.args.get('page', 1, type=int)
     per_page=3
     if page == -1:
@@ -246,7 +268,6 @@ def send_reset_email(user):
 
 If you did not make this request then simply ignore this email.
 Do not reply this mail.
-You can send us a mail at koikibabatunde14@gmail.com
 '''
     msg = Message(subject='Password Reset Request', 
                 sender='admin@demo.com',

@@ -8,39 +8,40 @@
                     {% else %}
                         <img class="rounded-circle account-img" src="{{ url_for('static', filename='img/'+blog.author.image_file) }}" alt="" sizes="150" srcset="">
                     {% endif %}
-                    {% if blog.author.username != current_user.username %}
-                    <div>
-                        <h3>{{ blog.author.username }} posted {{ blog.title }}</h3>
-                            <small class="text-muted">{{ blog.date_posted.strftime('%Y-%m-%d') }}</small>
-                    </div>
-                    <p class="article-content">
-                        {% if blog.body_html %}
-                            {{ blog.body_html | safe }}
-                        {% else %}
-                            {{ blog.content }}
-                        {% endif %}
-                    </p>
-                {% else %}
-                    <div>
-                        <h3>You posted {{ blog.title }}</h3>
-                        <small class="text-muted">{{ blog.date_posted.strftime('%Y-%m-%d') }}</small>
-                    </div>
-                </div>
-                <p class="article-content">
-                    {% if blog.body_html %}
-                        {{ blog.body_html | safe }}
+                    {% if blog.author != current_user %}
+                        <div>
+                            <h3 class="text-muted">{{ blog.author.username }}</h3>
+                            <h4 class="text-muted">{{ blog.title }}</h4>
+                            <small class="text-muted">{{ blog.date_posted.strftime('%Y-%m-%d : %H-%m') }}</small>
+                        </div>
+                        <p class="article-content">
+                            {% if blog.body_html %}
+                                {{ blog.body_html | safe }}
+                            {% else %}
+                                {{ blog.content }}
+                            {% endif %}
+                        </p>
                     {% else %}
-                        {{ blog.content }}
+                        <div>
+                            <h3>{{ current_user.username }} (You)</h3>
+                            <h4>{{ blog.title }}</h4>
+                            <small class="text-muted">{{ blog.date_posted.strftime('%Y-%m-%d  %H:%m') }}</small>
+                        </div>
+                        <p class="article-content">
+                            {% if blog.body_html %}
+                                {{ blog.body_html | safe }}
+                            {% else %}
+                                {{ blog.content }}
+                            {% endif %}
+                            </p>
+                        </p>
+                        <a class="btn btn-danger btn-sm m-1" href="{{ url_for('delete', id=blog.id) }}">Delete blog</a>
+                        <a  class="btn btn-secondary btn-sm m-1" href="{{ url_for('updatepost', id=blog.id) }}">Update blog</a>
                     {% endif %}
-                    </p>
-                </p>
-                <a class="btn btn-danger btn-sm m-1" href="{{ url_for('delete', post=blog.title) }}">Delete blog</a>
-                <a  class="btn btn-secondary btn-sm m-1" href="{{ url_for('updatepost', post=blog.title) }}">Update blog</a>
-                {% endif %}
                 </div>     
             </div>
         </article>
-        <a href="{{ url_for('viewblog', title=blog.title) }}#comments">
+        <a href="{{ url_for('viewblog', id=blog.id) }}#comments">
             <span class="btn btn-primary" id="comment">
                 {{ count }} 
                 {% if count > 1 %}
@@ -49,7 +50,7 @@
                     Comment
                 {% endif %}
             </span>
-           </a>
+        </a>
         <form action="" method="post" action="" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
@@ -85,23 +86,29 @@
                     </div> 
                     <p class="article-content">
                         {% if comment.body_html %}
-                            {{ comment.body_html[:500] | safe }}
+                            {{ comment.body_html | safe }}
                         {% else %}
-                            {{ comment.content[:500] }}
+                            {{ comment.content }}
                         {% endif %}
                     </p>
+                    {% if comment.author == current_user %}
+                    <a class="btn btn-danger btn-sm m-1" href="{{ url_for('delete_comment', id=comment.id) }}">Delete Comment</a>
+                    {% endif %}
                 </div>
-            </div>
         {% endfor %}
         {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
             {% if page_num %}
                 {% if pagination.page == page_num %}
-                    <a class="btn btn-info mb-4" href="{{ url_for('viewblog', page=page_num, title=blog.title) }}">{{ page_num }}</a>
+                    <a class="btn btn-info mb-4" href="{{ url_for('viewblog', page=page_num, id=blog.id) }}">{{ page_num }}</a>
                 {% else %}
-                    <a class="btn btn-outline-info mb-4" href="{{ url_for('viewblog', page=page_num, title=blog.title) }}">{{ page_num }}</a>
+                    <a class="btn btn-outline-info mb-4" href="{{ url_for('viewblog', page=page_num, id=blog.id) }}">{{ page_num }}</a>
                 {% endif %}
             {% else %}
                 ... 
             {% endif %}
         {% endfor %}
     {% endblock %}
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}
