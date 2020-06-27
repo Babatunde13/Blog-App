@@ -35,14 +35,12 @@
                             {{ post.content }}
                         {% endif %}
                     </p>
-                    <br>
                 </div>
                 <div>
                     <a class="btn btn-secondary btn-sm m-1"  href="{{ url_for('updatepost', id=post.id) }}">Update post</a>
                     <a class="btn btn-danger btn-sm m-1"  href="{{ url_for('delete', id=post.id) }}">Delete post</a>
                 </div>
             </article>
-            <br>
         {% endfor %}
         {% for page_num in all_posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
         {% if page_num %}
